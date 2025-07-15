@@ -44,7 +44,7 @@
     "default_aspect_ratio": "1152*896",
     "default_overwrite_step": -1,
     "checkpoint_downloads": {
-        "juggernautXL_v8Rundiffusion.safetensors": "https://civitai.com/api/download/models/1075446?type=Model&format=SafeTensor&size=pruned&fp=fp16&token-$d1d9611160b085bd4829fdff4db2d278"
+        "juggernautXL_v8Rundiffusion.safetensors": "https://civitai.com/api/download/models/1962475?type=Model&format=SafeTensor&size=pruned&fp=fp16&token-$d1d9611160b085bd4829fdff4db2d278"
     },
     "embeddings_downloads": {},
     "lora_downloads": {
