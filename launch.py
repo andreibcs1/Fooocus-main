@@ -127,3 +127,7 @@ config.update_files()
 init_cache(config.model_filenames, config.paths_checkpoints, config.lora_filenames, config.paths_loras)
 
 from webui import *
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
+
