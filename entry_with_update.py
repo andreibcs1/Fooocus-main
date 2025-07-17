@@ -1,29 +1,22 @@
 import os
 import sys
 
-
 root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(root)
 os.chdir(root)
-
 
 try:
     import pygit2
     pygit2.option(pygit2.GIT_OPT_SET_OWNER_VALIDATION, 0)
 
     repo = pygit2.Repository(os.path.abspath(os.path.dirname(__file__)))
-
     branch_name = repo.head.shorthand
-
-    remote_name = 'origin'
-    remote = repo.remotes[remote_name]
-
+    remote = repo.remotes['origin']
     remote.fetch()
 
     local_branch_ref = f'refs/heads/{branch_name}'
     local_branch = repo.lookup_reference(local_branch_ref)
-
-    remote_reference = f'refs/remotes/{remote_name}/{branch_name}'
+    remote_reference = f'refs/remotes/origin/{branch_name}'
     remote_commit = repo.revparse_single(remote_reference)
 
     merge_result, _ = repo.merge_analysis(remote_commit.id)
@@ -43,4 +36,8 @@ except Exception as e:
     print(str(e))
 
 print('Update succeeded.')
-from launch import *
+
+import launch
+
+if __name__ == "__main__":
+    launch.main(sys.argv[1:])
