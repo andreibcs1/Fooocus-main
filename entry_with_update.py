@@ -1,3 +1,6 @@
+# Creez fișierul corectat `entry_with_update.py` care apelează `main()` din `launch.py`,
+# transmițând argumentele primite din linia de comandă (prompt, preset, etc).
+entry_with_update_code = """
 import os
 import sys
 
@@ -39,6 +42,13 @@ except Exception as e:
 
 print('Update succeeded.')
 
-# ✅ Aici se schimbă față de versiunea originală:
+# ✅ Aici apelăm corect funcția main() din launch.py cu argumentele liniei de comandă
 from launch import main
-main(sys.argv[1:])
+if __name__ == '__main__':
+    main(sys.argv[1:])
+"""
+
+with open("/mnt/data/entry_with_update.py", "w") as f:
+    f.write(entry_with_update_code)
+
+"/mnt/data/entry_with_update.py corect pregătit ✅"
