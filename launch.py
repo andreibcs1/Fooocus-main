@@ -1,80 +1,57 @@
+import argparse
 import os
 import ssl
 import sys
 
-print('[System ARGV] ' + str(sys.argv))
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preset", type=str, default="default")
+    parser.add_argument("--prompt", type=str, default=None)
+    parser.add_argument("--negative_prompt", type=str, default=None)
+    parser.add_argument("--share", action="store_true")
+    parser.add_argument("--always-high-vram", action="store_true")
+    args = parser.parse_args(argv)
 
-root = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(root)
-os.chdir(root)
+    print('[System ARGV] ' + str(argv))
 
-os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
-if "GRADIO_SERVER_PORT" not in os.environ:
-    os.environ["GRADIO_SERVER_PORT"] = "7865"
+    root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.append(root)
+    os.chdir(root)
 
-ssl._create_default_https_context = ssl._create_unverified_context
+    os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+    os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
+    if "GRADIO_SERVER_PORT" not in os.environ:
+        os.environ["GRADIO_SERVER_PORT"] = "7865"
 
-import platform
-import fooocus_version
+    ssl._create_default_https_context = ssl._create_unverified_context
 
-from build_launcher import build_launcher
-from modules.launch_util import is_installed, run, python, run_pip, requirements_met, delete_folder_content
-from modules.model_loader import load_file_from_url
+    import platform
+    import fooocus_version
+    from build_launcher import build_launcher
+    from modules.launch_util import is_installed, run, python, run_pip, requirements_met, delete_folder_content
+    from modules.model_loader import load_file_from_url
 
-REINSTALL_ALL = False
-TRY_INSTALL_XFORMERS = False
+    REINSTALL_ALL = False
+    TRY_INSTALL_XFORMERS = False
 
-
-def prepare_environment():
-    torch_index_url = os.environ.get('TORCH_INDEX_URL', "https://download.pytorch.org/whl/cu121")
-    torch_command = os.environ.get('TORCH_COMMAND',
-                                   f"pip install torch==2.1.0 torchvision==0.16.0 --extra-index-url {torch_index_url}")
-    requirements_file = os.environ.get('REQS_FILE', "requirements_versions.txt")
-
-    print(f"Python {sys.version}")
-    print(f"Fooocus version: {fooocus_version.version}")
-
-    if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
-        run(f'"{python}" -m {torch_command}', "Installing torch and torchvision", "Couldn't install torch", live=True)
-
-    if TRY_INSTALL_XFORMERS:
-        if REINSTALL_ALL or not is_installed("xformers"):
-            xformers_package = os.environ.get('XFORMERS_PACKAGE', 'xformers==0.0.23')
-            if platform.system() == "Windows":
-                if platform.python_version().startswith("3.10"):
-                    run_pip(f"install -U -I --no-deps {xformers_package}", "xformers", live=True)
-                else:
-                    print("Installation of xformers is not supported in this version of Python.")
-                    print(
-                        "You can also check this and build manually: https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers#building-xformers-on-windows-by-duckness")
-                    if not is_installed("xformers"):
-                        exit(0)
-            elif platform.system() == "Linux":
-                run_pip(f"install -U -I --no-deps {xformers_package}", "xformers")
-
-    if REINSTALL_ALL or not requirements_met(requirements_file):
-        run_pip(f"install -r \"{requirements_file}\"", "requirements")
-
-    return
-
-
-vae_approx_filenames = [
-    ('xlvaeapp.pth', 'https://huggingface.co/lllyasviel/misc/resolve/main/xlvaeapp.pth'),
-    ('vaeapp_sd15.pth', 'https://huggingface.co/lllyasviel/misc/resolve/main/vaeapp_sd15.pt'),
-    ('xl-to-v1_interposer-v4.0.safetensors',
-     'https://huggingface.co/mashb1t/misc/resolve/main/xl-to-v1_interposer-v4.0.safetensors')
-]
-
-
-def ini_args():
-    from args_manager import args
-    return args
+    # Variabile globale pentru argumente – pot fi folosite mai jos în funcții
+    globals()['FOOOCUS_ARGS'] = args
 
 
 prepare_environment()
 build_launcher()
 args = ini_args()
+
+if 'FOOOCUS_ARGS' in globals():
+    if FOOOCUS_ARGS.prompt:
+        args.prompt = FOOOCUS_ARGS.prompt
+    if FOOOCUS_ARGS.negative_prompt:
+        args.negative_prompt = FOOOCUS_ARGS.negative_prompt
+    if FOOOCUS_ARGS.share:
+        args.share = FOOOCUS_ARGS.share
+    if FOOOCUS_ARGS.always_high_vram:
+        args.always_high_vram = FOOOCUS_ARGS.always_high_vram
+
 
 if args.gpu_device_id is not None:
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
